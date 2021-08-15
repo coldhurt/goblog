@@ -1,3 +1,3 @@
 #!/bin/bash
 
-npx nodemon --exec go run main.go --signal SIGTERM
+gin run main.go

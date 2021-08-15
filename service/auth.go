@@ -1,21 +1,26 @@
 package service
 
 import (
+	"errors"
 	"fmt"
+	"log"
 	"os"
 	"time"
 
+	"github.com/coldhurt/goblog/db"
+	"github.com/coldhurt/goblog/models"
 	"github.com/golang-jwt/jwt"
+	"github.com/spf13/viper"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type JWTService interface {
-	GenerateToken(email string, isUser bool) string
+	GenerateToken(email string) string
 	ValidateToken(token string) (*jwt.Token, error)
 }
 
 type authCustomClaims struct {
-	Name string `json:"name"`
-	User bool   `json:"user"`
+	Username string `json:"username"`
 	jwt.StandardClaims
 }
 
@@ -40,10 +45,9 @@ func getSecretKey() string {
 	return secret
 }
 
-func (service *jwtServices) GenerateToken(email string, isUser bool) string {
+func (service *jwtServices) GenerateToken(email string) string {
 	claims := &authCustomClaims{
 		email,
-		isUser,
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * 48).Unix(),
 			Issuer:    service.issure,
@@ -63,10 +67,31 @@ func (service *jwtServices) GenerateToken(email string, isUser bool) string {
 func (service *jwtServices) ValidateToken(encodedToken string) (*jwt.Token, error) {
 	return jwt.Parse(encodedToken, func(token *jwt.Token) (interface{}, error) {
 		if _, isvalid := token.Method.(*jwt.SigningMethodHMAC); !isvalid {
-			return nil, fmt.Errorf("Invalid token", token.Header["alg"])
+			return nil, fmt.Errorf("invalid token %s", token.Header["alg"])
 
 		}
 		return []byte(service.secretKey), nil
 	})
+}
 
+func Login(username string, password string) (string, error) {
+	service := JWTAuthService()
+	var admin *models.Admin
+
+	client, ctx, cancel := db.GetConnection()
+	defer cancel()
+	defer client.Disconnect(ctx)
+	collection := client.Database(viper.GetString("MONGODB_DATABASE")).Collection("admin")
+	result := collection.FindOne(ctx, bson.M{"username": username})
+	if result == nil {
+		return "", errors.New("no this user")
+	}
+	err := result.Decode(&admin)
+
+	if err != nil {
+		log.Printf("Failed marshalling %v", err)
+		return "", errors.New("no this user")
+	}
+	log.Printf("Find admin: %v", admin)
+	return service.GenerateToken(admin.Username), nil
 }
