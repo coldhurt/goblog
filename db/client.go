@@ -11,7 +11,15 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+var client *mongo.Client
+var ctx context.Context
+var cancel context.CancelFunc
+
 func GetConnection() (*mongo.Client, context.Context, context.CancelFunc) {
+	if client != nil && ctx != nil && cancel != nil {
+		return client, ctx, cancel
+	}
+
 	connectionURI := viper.GetString("MONGODB_URI")
 	connectTimeout := viper.GetInt("MONGODB_TIMTOUT")
 
@@ -20,7 +28,7 @@ func GetConnection() (*mongo.Client, context.Context, context.CancelFunc) {
 		log.Printf("Failed to create client: %v", err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(connectTimeout)*time.Second)
+	ctx, cancel = context.WithTimeout(context.Background(), time.Duration(connectTimeout)*time.Second)
 
 	err = client.Connect(ctx)
 	if err != nil {
@@ -35,4 +43,10 @@ func GetConnection() (*mongo.Client, context.Context, context.CancelFunc) {
 
 	fmt.Println("Connected to MongoDB!")
 	return client, ctx, cancel
+}
+
+func GetCollection(collectionName string) (*mongo.Client, *mongo.Collection, context.Context, context.CancelFunc) {
+	client, ctx, cancel := GetConnection()
+	collection := client.Database(viper.GetString("MONGODB_DATABASE")).Collection(collectionName)
+	return client, collection, ctx, cancel
 }
