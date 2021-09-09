@@ -2,6 +2,13 @@
 
 A simple blog under development using gin + mongodb
 
+# development
+
+```bash
+./dev.sh
+cd frontend && yarn dev
+```
+
 # curl test
 
 ## auth

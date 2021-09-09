@@ -102,10 +102,10 @@ func Login(username, password string) (string, error) {
 		return "", errors.New("no this user")
 	}
 
-	log.Printf("Find admin: %v", admin)
+	log.Printf("Find admin: %v", admin.Username)
 
 	if err := bcrypt.CompareHashAndPassword([]byte(admin.Password), []byte(password)); err != nil {
-		return "", err
+		return "", fmt.Errorf("invalid username or password")
 	}
 	return service.GenerateToken(admin.Username), nil
 }

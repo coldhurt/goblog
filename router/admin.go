@@ -29,7 +29,7 @@ func login(c *gin.Context) {
 	}
 	token, err := service.Login(d.Username, d.Password)
 	if err != nil {
-		c.JSON(http.StatusOK, models.Message{Msg: err.Error()})
+		c.JSON(http.StatusOK, models.MessageNoData{Msg: err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, models.Message{Msg: "ok", Data: map[string]string{"token": token}})

@@ -54,6 +54,20 @@ func listArticle(c *gin.Context) {
 	c.JSON(http.StatusOK, models.Message{Msg: "ok", Data: articles})
 }
 
+func getArticleById(c *gin.Context) {
+	id, ok := c.Params.Get("id")
+	if !ok {
+		c.JSON(http.StatusBadRequest, models.Message{Msg: "bad request"})
+		return
+	}
+	article, err := service.GetArticleById(id)
+	if err != nil {
+		c.JSON(http.StatusOK, models.Message{Msg: "ok", Data: nil})
+	} else {
+		c.JSON(http.StatusOK, models.Message{Msg: "ok", Data: article})
+	}
+}
+
 func editArticle(c *gin.Context) {
 	var body UpdateArticleBody
 	err := c.ShouldBindJSON(&body)
@@ -94,6 +108,7 @@ func initArticleRouter(r *gin.Engine) {
 		articleGroup.POST("/create", authenticator, createArticle)
 		articleGroup.PUT("/edit", authenticator, editArticle)
 		articleGroup.POST("/list", listArticle)
+		articleGroup.GET("/detail/:id", getArticleById)
 		articleGroup.DELETE("/remove", authenticator, removeArticle)
 	}
 }

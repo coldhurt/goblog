@@ -1,3 +1,3 @@
 #!/bin/bash
 
-gin run main.go
+nodemon --watch './**/*.go' --signal SIGTERM --exec 'go' run main.go

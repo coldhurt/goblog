@@ -1,5 +1,6 @@
 {
   "MONGODB_URI": "mongodb://localhost:27017/",
   "MONGODB_DATABASE": "goblog",
-  "MONGODB_TIMTOUT": 5
+  "MONGODB_TIMTOUT": 5,
+  "CORS": "http://localhost:3000"
 }

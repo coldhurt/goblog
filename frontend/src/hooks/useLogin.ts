@@ -9,14 +9,10 @@ const useLogin = () => {
   const login = (username = '', password = '') => {
     dispatch(startLogin())
     Post('admin/login', {
-      cache: 'no-cache',
-      headers: {
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({
+      body: {
         username,
         password,
-      }),
+      },
     })
       .then((res) => res.json())
       .then((res) => {

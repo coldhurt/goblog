@@ -46,9 +46,18 @@ func GetAllArticles(page int64, pageSize int64) []models.Article {
 	return articles
 }
 
-func GetArticleById(id int) models.Article {
+func GetArticleById(id string) (models.Article, error) {
 	var article models.Article
-	return article
+	client, collection, ctx, cancel := db.GetCollection("article")
+	defer cancel()
+	defer client.Disconnect(ctx)
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return article, err
+	}
+	result := collection.FindOne(ctx, bson.M{"_id": objID})
+	result.Decode(&article)
+	return article, nil
 }
 
 func CreateArticle(title string, content string) (primitive.ObjectID, error) {
